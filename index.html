@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <div class="avatar"><img src="avatar.png" alt=""></div>
+                <div class="header-icons">
+                    <img src="circle-notch-solid.png" alt="">
+                    <img src="chat.png" alt="">
+                    <img src="more.png" alt="">
+                </div>
+            </div>
+            <div class="search-box">
+                <div class="search-container">
+                    <img src="search-solid.png" alt="">
+                    <input type="text" id="searchInput" placeholder="Search or start new chat">
+                </div>
+            </div>
+            <div class="chat-list" id="chatList"></div>
+        </div>
+
+        <div class="chat-container">
+            <div class="header">
+                <div class="left">
+                    <div class="avatar"><img id="currentAvatar" src="avatar.png" alt=""></div>
+                    <div class="name"><h4 id="currentName">Sir Zeeshan Ali</h4><p id="currentStatus">online</p></div>
+                </div>
+                <div class="header-icons">
+                    <img src="search-solid.png" alt="">
+                    <img src="more.png" alt="">
+                </div>
+            </div>
+
+            <div class="chat-window" id="chatWindow"></div>
+
+            <div class="type-box">
+                <img src="smile.png" alt="">
+                <img src="paper-clip.png" alt="">
+                <div class="input"><input type="text" id="msgInput" placeholder="Type a message"></div>
+                <img src="microphone.png" alt="" id="sendBtn">
+            </div>
+        </div>
+    </div>
+
+<script>
+const chats = [
+    {id:1, name:"Sir Zeeshan Ali", avatar:"avatar.png", lastMsg:"beta faham assignment"},
+    {id:2, name:"ALI JIGER", avatar:"avatar.png", lastMsg:"Bhai kal match hai?"},
+    {id:3, name:"Fatima Zahra", avatar:"avatar.png", lastMsg:"Notes bhej do"},
+    {id:4, name:"Muhammad AHMED", avatar:"avatar.png", lastMsg:"University aa gaye?"},
+    {id:5, name:"Ayesha Khan", avatar:"avatar.png", lastMsg:"Haha "},
+    {id:6, name:"ANNA", avatar:"avatar.png", lastMsg:"Ghomne chalein?"},
+    {id:7, name:"Zainab Ali", avatar:"avatar.png", lastMsg:"Project complete?"},
+    {id:8, name:"Amna", avatar:"avatar.png", lastMsg:"Chai peene chalein"},
+    {id:9, name:"shuja", avatar:"avatar.png", lastMsg:"Beta khana kha liya?"},
+    {id:10, name:"NEXSKILL", avatar:"avatar.png", lastMsg:"Umer: Sir ka lecture hai kal"},
+];
+
+let messages = {
+    1: [
+        {text:"As-salamu Alaikum Sir", type:"left", time:"10:00 am"},
+        {text:"Walaikum As-salam, kia hall ha", type:"right", time:"10:03 am", status:"read"},
+        {text:"Sir assignment submit kar diya hai", type:"left", time:"10:03 am"},
+        {text:"Good, check karta hun. Well done", type:"right", time:"10:04am", status:"read"},
+        {text:"Thank you Sir ", type:"left", time:"10:05 am"}
+    ],
+    2: [
+        {text:"This is a message", type:"left", time:"11:33 pm"},
+        {text:"This is a message", type:"right", time:"11:34 pm", status:"read"},
+        {text:"This is a message", type:"left", time:"11:35 pm"},
+        {text:"This is a message", type:"right", time:"11:36 pm", status:"read"}
+    ],
+    3: [{text:"Project file sent", type:"right", time:"2:44 pm", status:"read"}, {text:"Got it thanks", type:"left", time:"2:45 pm"}],
+    4: [{text:"Haha that was funny ", type:"left", time:"1:11 pm"}],
+    5: [{text:"Gym at 6am?", type:"left", time:"10:00 am"}, {text:"Yes bro done", type:"right", time:"10:06 am", status:"sent"}],
+    6: [], 7: [], 8: [], 9: [{text:"Beta khana kha liya?", type:"left", time:"9:00 pm"}], 10: [{text:"Umer: Sir ka lecture hai kal", type:"left", time:"8:00 pm"}]
+};
+
+let currentChatId = 1;
+const chatListEl = document.getElementById("chatList");
+const chatWindowEl = document.getElementById("chatWindow");
+const currentNameEl = document.getElementById("currentName");
+const currentAvatarEl = document.getElementById("currentAvatar");
+const msgInputEl = document.getElementById("msgInput");
+const sendBtn = document.getElementById("sendBtn");
+const searchInput = document.getElementById("searchInput");
+
+function getTime(){ const now=new Date(); let h=now.getHours(); const m=now.getMinutes().toString().padStart(2,'0'); const ampm=h>=12?'pm':'am'; h=h%12||12; return `${h}:${m} ${ampm}`; }
+function getTick(status){
+    if(status==="sent") return `<span class="tick">✓✓</span>`;
+    if(status==="delivered") return `<span class="tick">✓✓</span>`;
+    if(status==="read") return `<span class="tick blue">✓✓</span>`;
+    return "";
+}
+function renderChatList(filter=""){
+    chatListEl.innerHTML="";
+    chats.filter(c=>c.name.toLowerCase().includes(filter.toLowerCase())).forEach(chat=>{
+        const div=document.createElement("div");
+        div.className=`chat-item ${chat.id===currentChatId?'active':''}`;
+        div.innerHTML=`<div class="avatar"><img src="${chat.avatar}"></div><div class="chat-info"><div class="top"><h4>${chat.name}</h4><span>2:44 pm</span></div><p>${chat.lastMsg}</p></div>`;
+        div.onclick=()=>openChat(chat.id);
+        chatListEl.appendChild(div);
+    });
+}
+function openChat(id){
+    currentChatId=id;
+    const chat=chats.find(c=>c.id===id);
+    currentNameEl.textContent=chat.name;
+    currentAvatarEl.src=chat.avatar;
+    renderChatList(searchInput.value);
+    renderMessages();
+}
+function renderMessages(){
+    chatWindowEl.innerHTML="";
+    (messages[currentChatId]||[]).forEach(m=>{
+        const div=document.createElement("div");
+        div.className=`msg ${m.type==='left'?'left':'right'}`;
+        div.innerHTML=`${m.text} <span class="meta">${m.time} ${m.type==='right'?getTick(m.status):''}</span>`;
+        chatWindowEl.appendChild(div);
+    });
+    chatWindowEl.scrollTop=chatWindowEl.scrollHeight;
+}
+function sendMessage(){
+    const text=msgInputEl.value.trim(); if(!text) return;
+    if(!messages[currentChatId]) messages[currentChatId]=[];
+    messages[currentChatId].push({text:text, type:"right", time:getTime(), status:"sent"});
+    chats.find(c=>c.id===currentChatId).lastMsg=text;
+    msgInputEl.value=""; renderMessages(); renderChatList(searchInput.value);
+    const lastMsg = messages[currentChatId][messages[currentChatId].length-1];
+    setTimeout(()=>{ lastMsg.status="delivered"; renderMessages(); },800);
+    setTimeout(()=>{ lastMsg.status="read"; renderMessages(); },2000);
+    setTimeout(()=>{ messages[currentChatId].push({text:"Got it 👍", type:"left", time:getTime()}); renderMessages(); },2500);
+}
+sendBtn.onclick=sendMessage;
+msgInputEl.addEventListener("keypress",(e)=>{ if(e.key==="Enter") sendMessage(); });
+searchInput.addEventListener("input",(e)=>{ renderChatList(e.target.value); });
+renderChatList(); renderMessages();
+</script>
+</body>
+</html>
